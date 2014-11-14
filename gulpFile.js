@@ -3,8 +3,8 @@ var gulp = require("gulp");
 var jade = require("gulp-jade");
 var	stylus = require("gulp-stylus");
 /*var	jshint = require("gulp-jshint");
-var uglify = require("gulp-uglify");
-var concat = require("gulp-concat");*/
+var uglify = require("gulp-uglify");*/
+var concat = require("gulp-concat");
 var addsrc = require("gulp-add-src");
 /*var replace = require("gulp-replace");
 var plumber = require("gulp-plumber");
@@ -28,6 +28,7 @@ gulp.task("styles", function () {
 	gulp.src(paths.styl)
 		.pipe(stylus({ use: nib(), compress: true }))
 		.pipe(addsrc(paths.static_css))
+		.pipe(concat("all-min.css"))
 		.pipe(gulp.dest("contents/css/"))
 });
 
