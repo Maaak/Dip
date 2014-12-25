@@ -9,23 +9,17 @@ app.lineAlgorithm = function(){
 		this.rectangles = [];
 	};
 
-	LineAlgorithm.prototype.checkChasm = function(startEdge, fPoint, lPoint){
-		// from top
-		if (!_.find(startEdge, function(item){ return item.y === fPoint.y; })) {
-			return { 
-				top: { x: fPoint.x, y: startEdge.top.y},
-				bot: { x: fPoint.x, y: fPoint.y},
-			};
+	LineAlgorithm.prototype.createChasm = function(startEdge, fPoint, lPoint){
+		return {
+			top: {
+				x: fPoint.x,
+				y: _.min( [startEdge.top, startEdge.bot, fPoint, lPoint], "y").y
+			},
+			bot: {
+				x: fPoint.x,
+				y: _.max( [startEdge.top, startEdge.bot, fPoint, lPoint], "y").y
+			}
 		}
-
-		// from bottom
-		if (!_.find(startEdge, function(item){ return item.y === lPoint.y; })) {
-			return { 
-				top: { x: lPoint.x, y: lPoint.y},
-				bot: { x: lPoint.x, y: startEdge.bot.y},
-			};
-		}
-		return null;
 	};
 
 	/**
@@ -35,24 +29,14 @@ app.lineAlgorithm = function(){
 	*/
 	LineAlgorithm.prototype.buildRectangle = function(startEdge, fPoint, lPoint){
 
-		// chasm edges checks
-		var chasm = this.checkChasm(startEdge, fPoint, lPoint);
 		var rect = {
 			lt: startEdge.top,
-			lb: startEdge.bot
+			lb: startEdge.bot,
+			rt: { x: fPoint.x, y: startEdge.top.y},
+			rb: { x: fPoint.x, y: startEdge.bot.y}
 		};
 
-		// from top
-		if (!_.find(startEdge, function(item){ return item.y === fPoint.y; })) {
-			rect.rt = { x: fPoint.x, y: rect.lt.y };
-			rect.rb = lPoint;
-		}
-
-		// from bottom
-		if (!_.find(startEdge, function(item){ return item.y === lPoint.y; })) {
-			rect.rt = fPoint;
-			rect.rb = { x: lPoint.x, y: rect.lb.y };
-		}
+		var chasm = this.createChasm(startEdge, fPoint, lPoint);
 
 										console.log("["+rect.lt.x+"."+rect.lt.y+"]  " + "["+rect.rt.x+"."+rect.rt.y+"]\n " + "["+rect.lb.x+"."+rect.lb.y+"]  "+"["+rect.rb.x+"."+rect.rb.y+"]");
 										console.log("chasm ["+chasm.top.x+"."+chasm.top.y+"]-["+chasm.bot.x+"."+chasm.bot.y+"]");
@@ -96,11 +80,8 @@ app.lineAlgorithm = function(){
 	LineAlgorithm.prototype.addEdge = function(fPoint, lPoint){
 		
 		var startEdge = _.find(this.edges, function(rect){
-			return  (rect.top.y === fPoint.y && rect.bot.y === lPoint.y) ||
-
-					(rect.top.y === fPoint.y && rect.top.y < lPoint.y) ||
-
-					(rect.bot.y === lPoint.y && rect.bot.y > fPoint.y);
+			return  (rect.top.y === fPoint.y || rect.top.y === lPoint.y) ||
+					(rect.bot.y === fPoint.y || rect.bot.y === lPoint.y);
 		});
 
 
