@@ -5,7 +5,27 @@ app.lineAlgorithm = function(){
 	LineAlgorithm = function(){
 
 		this.edges = [];
+		this.coords = [];
 		this.rectangles = [];
+	};
+
+	LineAlgorithm.prototype.checkChasm = function(startEdge, fPoint, lPoint){
+		// from top
+		if (!_.find(startEdge, function(item){ return item.y === fPoint.y; })) {
+			return { 
+				top: { x: fPoint.x, y: startEdge.top.y},
+				bot: { x: fPoint.x, y: fPoint.y},
+			};
+		}
+
+		// from bottom
+		if (!_.find(startEdge, function(item){ return item.y === lPoint.y; })) {
+			return { 
+				top: { x: lPoint.x, y: lPoint.y},
+				bot: { x: lPoint.x, y: startEdge.bot.y},
+			};
+		}
+		return null;
 	};
 
 	/**
@@ -13,14 +33,60 @@ app.lineAlgorithm = function(){
 	* @param  {Array} 	points	Array with rectangle coordinates(left edge - right edge)
 	* @return {Object}  	    Rectangle with coordinates
 	*/
-	LineAlgorithm.prototype.buildRectangle = function(points){
-		return {
-			0: { x: points[0].x, y: points[2].y	},
-			1: { x: points[1].x, y: points[3].y },
-			2: { x: points[2].x, y: points[2].y },
-			3: { x: points[3].x, y: points[3].y	},
+	LineAlgorithm.prototype.buildRectangle = function(startEdge, fPoint, lPoint){
+
+		// chasm edges checks
+		var chasm = this.checkChasm(startEdge, fPoint, lPoint);
+		var rect = {
+			lt: startEdge.top,
+			lb: startEdge.bot
+		};
+
+		// from top
+		if (!_.find(startEdge, function(item){ return item.y === fPoint.y; })) {
+			rect.rt = { x: fPoint.x, y: rect.lt.y };
+			rect.rb = lPoint;
 		}
-	}
+
+		// from bottom
+		if (!_.find(startEdge, function(item){ return item.y === lPoint.y; })) {
+			rect.rt = fPoint;
+			rect.rb = { x: lPoint.x, y: rect.lb.y };
+		}
+
+										console.log("["+rect.lt.x+"."+rect.lt.y+"]  " + "["+rect.rt.x+"."+rect.rt.y+"]\n " + "["+rect.lb.x+"."+rect.lb.y+"]  "+"["+rect.rb.x+"."+rect.rb.y+"]");
+										console.log("chasm ["+chasm.top.x+"."+chasm.top.y+"]-["+chasm.bot.x+"."+chasm.bot.y+"]");
+
+		return { rect: rect, chasm: chasm};
+	};
+
+	LineAlgorithm.prototype.cutRectangle = function(startEdge, fPoint, lPoint){
+	
+		var rect = this.buildRectangle(JSON.parse(JSON.stringify(startEdge)), JSON.parse(JSON.stringify(fPoint)), JSON.parse(JSON.stringify(lPoint)));
+
+		if (rect.chasm) {
+			// create a new point after cut
+			var buf = _.find(rect.chasm, function(item){ return !item.id });
+			var newPoint = {
+				id: this.coords.length,
+				pre: null,
+				next: null,
+				x: buf.x,
+				y: buf.y,
+			};
+			this.coords.push(newPoint);
+		}
+
+		// save filled rectangle
+		this.rectangles.push( rect.rect );
+
+		// add old edge
+		this.edges.push(rect.chasm);
+
+		// remove old edge
+		_.remove(this.edges, startEdge);
+		return rect;
+	};
 
 	/**
 	 * Adds edge as a begin of rectangle
@@ -30,36 +96,32 @@ app.lineAlgorithm = function(){
 	LineAlgorithm.prototype.addEdge = function(fPoint, lPoint){
 		
 		var startEdge = _.find(this.edges, function(rect){
-			return  (rect[0].y <= fPoint.y && rect[1].y >= fPoint.y) ||
-					(rect[0].y <= lPoint.y && rect[1].y >= lPoint.y);
+			return  (rect.top.y === fPoint.y && rect.bot.y === lPoint.y) ||
+
+					(rect.top.y === fPoint.y && rect.top.y < lPoint.y) ||
+
+					(rect.bot.y === lPoint.y && rect.bot.y > fPoint.y);
 		});
 
 
 		if (startEdge) {
 			// filling existed rectangle
-			var filledRect = LineAlgorithm.prototype.buildRectangle({
-				0: startEdge[0],
-				1: startEdge[1],
-				2: fPoint,
-				3: lPoint,
-			});
-
-			if (startEdge[1].y > filledRect[0].y) {
-				startEdge[1].y = filledRect[0].y;
-			}
-
-			this.rectangles.push(filledRect);
+			var rect = this.cutRectangle(startEdge, fPoint, lPoint);
 		}else{
 			// adding new rectangle
-			this.edges.push({
-				0: fPoint,
-				1: lPoint,
-			});
+			this.edges.push(
+				{
+					top: fPoint,
+					bot: lPoint,
+				}
+			);
 		}
-
-	}
+	};
 
 	LineAlgorithm.prototype.setData = function(coords){
+
+		this.coords = coords;
+
 		// width and height calculation
 		var minCoordX = _.min(coords, function(coord){ return coord.x; });
 		var maxCoordX = _.max(coords, function(coord){ return coord.x; });
