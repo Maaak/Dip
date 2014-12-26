@@ -10,16 +10,45 @@ app.lineAlgorithm = function(){
 	};
 
 	LineAlgorithm.prototype.createChasm = function(startEdge, fPoint, lPoint){
-		return {
-			top: {
-				x: fPoint.x,
-				y: _.min( [startEdge.top, startEdge.bot, fPoint, lPoint], "y").y
-			},
-			bot: {
-				x: fPoint.x,
-				y: _.max( [startEdge.top, startEdge.bot, fPoint, lPoint], "y").y
+		var chasm;
+
+		if (fPoint.y > startEdge.top.y && fPoint.y < startEdge.bot.y) {
+			chasm = {
+				top: {
+					x: fPoint.x,
+					y: startEdge.top.y
+				},
+				bot: {
+					x: fPoint.x,
+					y: fPoint.y
+				}
+			}
+		}else{
+			if (lPoint.y > startEdge.top.y && lPoint.y < startEdge.bot.y) {
+				chasm = {
+					top: {
+						x: lPoint.x,
+						y: lPoint.y
+					},
+					bot: {
+						x: lPoint.x,
+						y: startEdge.bot.y
+					}
+				}
+			}else{
+				chasm = {
+					top: {
+						x: fPoint.x,
+						y: _.min( [startEdge.top, startEdge.bot, fPoint, lPoint], "y").y
+					},
+					bot: {
+						x: fPoint.x,
+						y: _.max( [startEdge.top, startEdge.bot, fPoint, lPoint], "y").y
+					}
+				}	
 			}
 		}
+		return chasm;
 	};
 
 	/**
@@ -39,7 +68,7 @@ app.lineAlgorithm = function(){
 		var chasm = this.createChasm(startEdge, fPoint, lPoint);
 
 										console.log("["+rect.lt.x+"."+rect.lt.y+"]  " + "["+rect.rt.x+"."+rect.rt.y+"]\n " + "["+rect.lb.x+"."+rect.lb.y+"]  "+"["+rect.rb.x+"."+rect.rb.y+"]");
-										console.log("chasm ["+chasm.top.x+"."+chasm.top.y+"]-["+chasm.bot.x+"."+chasm.bot.y+"]");
+										console.log("chasm ["+chasm.top.x+"."+chasm.top.y+"]-["+chasm.bot.x+"."+chasm.bot.y+"]\n\n");
 
 		return { rect: rect, chasm: chasm};
 	};
@@ -79,15 +108,19 @@ app.lineAlgorithm = function(){
 	 */
 	LineAlgorithm.prototype.addEdge = function(fPoint, lPoint){
 		
-		var startEdge = _.find(this.edges, function(rect){
-			return  (rect.top.y === fPoint.y || rect.top.y === lPoint.y) ||
-					(rect.bot.y === fPoint.y || rect.bot.y === lPoint.y);
+		var rect;
+		var self = this;
+		var startEdges = _.filter(this.edges, function(edge){
+			return  (edge.top.y === fPoint.y || edge.top.y === lPoint.y) ||
+					(edge.bot.y === fPoint.y || edge.bot.y === lPoint.y);
 		});
 
 
-		if (startEdge) {
-			// filling existed rectangle
-			var rect = this.cutRectangle(startEdge, fPoint, lPoint);
+		if (startEdges.length) {
+			_.forEach(startEdges, function(startEdge){
+				// filling existed rectangle
+				rect = self.cutRectangle(startEdge, fPoint, lPoint);	
+			});
 		}else{
 			// adding new rectangle
 			this.edges.push(
@@ -97,6 +130,16 @@ app.lineAlgorithm = function(){
 				}
 			);
 		}
+
+		_.map(this.edges, function(edge){
+			var edges = _.filter(self.edges, function(ed){
+				return  ed.top.x === edge.bot.x && ed.top.y === edge.bot.y || 
+						ed.bot.x === edge.top.x && ed.bot.y === edge.top.y;
+			});
+			if (edges.length) {
+				console.log("Duplicate");
+			}
+		});
 	};
 
 	LineAlgorithm.prototype.setData = function(coords){
@@ -115,7 +158,7 @@ app.lineAlgorithm = function(){
 		
 		// main loop
 		var i = minCoordX.x;
-		while(i < maxCoordX.x){
+		while(i <= maxCoordX.x){
 			
 			stepCoords = _.filter(coords, {x: i});
 			stepCoords = _.sortBy(stepCoords, "y");
