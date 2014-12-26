@@ -10,6 +10,8 @@ app.ceed = function(){
 		var coordinates = app.parser.toCoordinates(data);
 
 		var sceneLog = app.logic.buildScene(coordinates, true);
+
+		app.scene.render(sceneLog);
 	}
 
 

@@ -11,7 +11,7 @@ app.logic =function(){
 
 	Logic.prototype.buildScene = function(data, isLineAlgorithm){
 		if (isLineAlgorithm) {
-			app.lineAlgorithm.setData(data);
+			return app.lineAlgorithm.setData(data);
 		}else{
 
 		}

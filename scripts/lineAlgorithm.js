@@ -92,6 +92,11 @@ app.lineAlgorithm = function(){
 
 		// save filled rectangle
 		this.rectangles.push( rect.rect );
+		app.logger.push({
+			action: "render",
+			target: "rectangle",
+			data: rect.rect
+		});
 
 		// add old edge
 		this.edges.push(rect.chasm);
@@ -176,6 +181,8 @@ app.lineAlgorithm = function(){
 
 			i++;
 		}
+
+		return app.logger.getScene();
 	};
 
 
