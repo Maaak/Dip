@@ -11,9 +11,14 @@ app.ceed = function(){
 
 		var sceneLog = app.logic.buildScene(coordinates, true);
 
-		app.scene.render(sceneLog);
+		if (app.scene) {
+			app.scene.render(sceneLog);
+		}else{
+			setTimeout(function() {
+				app.scene.render(sceneLog);	
+			}, 50);
+		}
 	}
-
 
 	return new Ceed();
 }();

@@ -1,77 +1,102 @@
 var app = app || {};
 
-app.scene = function(){
-	"use strict";
+setTimeout(function() {
+	app.scene = function(){
+		"use strict";
 
-	var Scene = function(){
-		
-	};
+		var Scene = function(){
+			this.zoom = 20;
+			this.colors = ["#511", "#81F", "#21a", "#4a1", "#ba1", "#49b", "#25b", "#111", "#111", "#111"];
+			this.colorsIndex = 0;
+			this.canvasInit();
+			
 
-	Scene.prototype.renderRectangle = function(rect){
-		// The creation of the square is done in the same way as the triangle, except of the 
-		// face definition. Instead of using one THREE.Face3, we have to define two 
-		// THREE.Face3 objects. 
-		// 1. Instantiate the geometry object 
-		// 2. Add the vertices 
-		// 3. Define the faces by setting the vertices indices 
-		var squareGeometry = new THREE.Geometry(); 
-		squareGeometry.vertices.push(new THREE.Vector3(-1.0,  1.0, 0.0)); 
-		squareGeometry.vertices.push(new THREE.Vector3( 1.0,  1.0, 0.0)); 
-		squareGeometry.vertices.push(new THREE.Vector3( 1.0, -1.0, 0.0)); 
-		squareGeometry.vertices.push(new THREE.Vector3(-1.0, -1.0, 0.0)); 
-		squareGeometry.faces.push(new THREE.Face3(0, 1, 2)); 
-		squareGeometry.faces.push(new THREE.Face3(0, 2, 3)); 
 
-		// Create a white basic material and activate the 'doubleSided' attribute. 
-		var squareMaterial = new THREE.MeshBasicMaterial({ 
-			color:0xFFFFFF, 
-			side:THREE.DoubleSide 
-		}); 
+			this.isAnimating = false;
+		};
 
-		// Create a mesh and insert the geometry and the material. Translate the whole mesh 
-		// by 1.5 on the x axis and by 4 on the z axis and add the mesh to the scene. 
-		var squareMesh = new THREE.Mesh(squareGeometry, squareMaterial); 
-		squareMesh.position.set(1.5, 0.0, 4.0); 
-		scene.add(squareMesh); 
-	};
+		Scene.prototype.canvasInit = function(){
+			this.canvasEl = app.ui.canvasEl;
 
-	Scene.prototype.render = function(log){
-	
-		_.forEach(log, function(note){
-			switch(note.action){
-				case "render":
-					switch(note.target){
-						case "rectangle":
-							this.renderRectangle(note.data)
-						break;
-					}
-				break;
+			this.canvas = this.canvasEl.getContext("2d");
+			this.canvas.width = this.canvasEl.clientWidth;
+			this.canvas.height = this.canvasEl.clientHeight;
+
+			this.canvas.translate(this.canvas.width/4, this.canvas.height/4);
+			this.canvasClear(this.canvas);
+		};
+
+		Scene.prototype.canvasClear = function(canvas){
+			canvas.save();
+			canvas.setTransform(1, 0, 0, 1, 0, 0);
+			canvas.clearRect(0, 0, canvas.width, canvas.height);
+			canvas.restore();
+		};
+
+		Scene.prototype.renderGrid = function(canvas){
+			canvas.save();
+			canvas.setTransform(1, 0, 0, 1, 0, 0);
+			canvas.lineWidth = 0.1;
+			canvas.strokeStyle = "#fff";
+			var i = 0;
+			var loopLength = Math.floor(this.canvas.width/this.zoom);
+			while(i < loopLength){
+				canvas.beginPath();
+				canvas.moveTo(0.5, i*this.zoom  + 0.5);
+				canvas.lineTo(this.canvas.width, i*this.zoom  + 0.5);
+				canvas.stroke();
+
+				canvas.beginPath();
+				canvas.moveTo(i*this.zoom + 0.5, 0.5);
+				canvas.lineTo(i*this.zoom + 0.5, this.canvas.height);
+				canvas.stroke();
+				
+				i++;
 			}
-		}.bind(this));
-	};
-	var renderer = new THREE.WebGLRenderer({antialias:true});
-	renderer.setClearColor(0x000000, 1); 
-	var canvasWidth = document.getElementById("scene").clientWidth; 
-	var canvasHeight = document.getElementById("scene").clientHeight;
- 	document.getElementById("scene").appendChild(renderer.domElement);
-	renderer.setSize(canvasWidth, canvasHeight); 
-	var camera = new THREE.PerspectiveCamera(45, canvasWidth / canvasHeight, 1, 100); 
-	var scene = new THREE.Scene(); 
-	camera.position.set(0, 0, 10); 
-	camera.lookAt(scene.position); 
-	scene.add(camera); 
+			canvas.restore();
+		};
+
+		Scene.prototype.renderRectangle = function(rect){
+			this.canvas.beginPath();
+			this.canvas.fillStyle = this.colors[this.colorsIndex++];
+			this.canvas.rect(
+				rect.lt.x * this.zoom+ 0.5,
+				rect.lt.y * this.zoom + 0.5, 
+				(rect.rt.x-rect.lt.x) * this.zoom,
+				(rect.lb.y-rect.lt.y) * this.zoom
+			);
+			this.canvas.fill();
+			this.canvas.stroke();
+
+			this.canvas.font = "10px Calibri";
+      		this.canvas.fillText("[" +rect.lt.x+ "," +rect.lt.y+ "]", rect.lt.x * this.zoom - 10, rect.lt.y  * this.zoom - 5);
+		};
+
+		Scene.prototype.render = function(log){
+			_.forEach(log, function(note){
+				switch(note.action){
+					case "render":
+						switch(note.target){
+							case "rectangle":
+								this.renderRectangle(note.data)
+							break;
+						}
+					break;
+				}
+			}.bind(this));
+
+			this.renderGrid(this.canvas);
+		};
 
 
-	function render() {
-		requestAnimationFrame( render );
-
-		/*cube.rotation.x += 0.1;
-		cube.rotation.y += 0.1;*/
-
-		renderer.render(scene, camera);
-	}
-	render();
-
-	
-	return new Scene();
-}();
+		Scene.prototype.animate = function() {
+			this.render();
+			if (!this.isAnimating) {
+				this.animationId = window.requestAnimationFrame(this.animate);
+				//this.isAnimating = true;
+			}
+		};
+		
+		return new Scene();
+	}();
+}, 50);
