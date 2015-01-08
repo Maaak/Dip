@@ -10,8 +10,6 @@ setTimeout(function() {
 			this.colorsIndex = 0;
 			this.canvasInit();
 			
-
-
 			this.isAnimating = false;
 		};
 
