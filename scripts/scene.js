@@ -20,7 +20,8 @@ setTimeout(function() {
 			this.canvas.width = this.canvasEl.clientWidth;
 			this.canvas.height = this.canvasEl.clientHeight;
 
-			this.canvas.translate(this.canvas.width/4, this.canvas.height/4);
+			var canvasShift = 4 * this.zoom;
+			this.canvas.translate(canvasShift, canvasShift);
 			this.canvasClear(this.canvas);
 		};
 
@@ -29,13 +30,15 @@ setTimeout(function() {
 			canvas.setTransform(1, 0, 0, 1, 0, 0);
 			canvas.clearRect(0, 0, canvas.width, canvas.height);
 			canvas.restore();
+			this.renderGrid(this.canvas);
+			this.colorsIndex = 0;
 		};
 
 		Scene.prototype.renderGrid = function(canvas){
 			canvas.save();
 			canvas.setTransform(1, 0, 0, 1, 0, 0);
 			canvas.lineWidth = 0.1;
-			canvas.strokeStyle = "#fff";
+			canvas.strokeStyle = "#111";
 			var i = 0;
 			var loopLength = Math.floor(this.canvas.width/this.zoom);
 			while(i < loopLength){
@@ -82,8 +85,6 @@ setTimeout(function() {
 					break;
 				}
 			}.bind(this));
-
-			this.renderGrid(this.canvas);
 		};
 
 

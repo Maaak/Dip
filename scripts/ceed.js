@@ -19,6 +19,8 @@ app.ceed = function(){
 				this.stripUpdate(sceneLog);
 			}.bind(this), 50);
 		}
+
+		return sceneLog;
 	};
 
 	Ceed.prototype.stripUpdate = function(log){
@@ -32,9 +34,8 @@ app.ceed = function(){
 				case "render":
 					switch(note.target){
 						case "rectangle":
-							el.textContent = note.action + " " +note.target + 
-							" with begin at [" + note.data.lt.x + "," +note.data.lt.y+ "] and " + 
-							(note.data.rt.x-note.data.lt.x) + " width and " + (note.data.lb.y-note.data.lt.y) + " height";
+							el.textContent = "отрисовка прямоугольника с началом в точке [" + note.data.lt.x + "," +note.data.lt.y+ "] " + 
+							(note.data.rt.x-note.data.lt.x) + " шириной и " + (note.data.lb.y-note.data.lt.y) + " высотой";
 						break;
 					}
 				break;
