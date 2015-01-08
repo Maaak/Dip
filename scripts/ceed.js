@@ -34,8 +34,8 @@ app.ceed = function(){
 				case "render":
 					switch(note.target){
 						case "rectangle":
-							el.textContent = "отрисовка прямоугольника с началом в точке [" + note.data.lt.x + "," +note.data.lt.y+ "] " + 
-							(note.data.rt.x-note.data.lt.x) + " шириной и " + (note.data.lb.y-note.data.lt.y) + " высотой";
+							el.textContent = "отрисовка прямоугольника с началом в точке [" + note.data.lt.x + "," +note.data.lt.y+ "] шириной " + 
+							(note.data.rt.x-note.data.lt.x) + " и высотой " + (note.data.lb.y-note.data.lt.y);
 						break;
 					}
 				break;

@@ -70,7 +70,7 @@ app.lineAlgorithm = function(){
 		//console.log("["+rect.lt.x+"."+rect.lt.y+"]  " + "["+rect.rt.x+"."+rect.rt.y+"]\n " + "["+rect.lb.x+"."+rect.lb.y+"]  "+"["+rect.rb.x+"."+rect.rb.y+"]");
 		//console.log("chasm ["+chasm.top.x+"."+chasm.top.y+"]-["+chasm.bot.x+"."+chasm.bot.y+"]\n\n");
 
-		app.ui.descriptionEl.textContent += "П"+this.rectangles.length+"["+(rect.rt.x-rect.lt.x)+" "+(rect.lb.y-rect.lt.y)+"]["+rect.lt.x+"."+rect.lt.y+"]";
+		app.ui.descriptionInputEl.value += "П"+this.rectangles.length+"["+(rect.rt.x-rect.lt.x)+" "+(rect.lb.y-rect.lt.y)+"]["+rect.lt.x+"."+rect.lt.y+"]";
 
 		return { rect: rect, chasm: chasm};
 	};

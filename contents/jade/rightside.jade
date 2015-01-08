@@ -1,9 +1,12 @@
 block right
 	#right-side
 		#map
+			span#title|Исходное слово
 			input#map-input(autofocus autocomplete="on" maxlength="1024" placeholder="Enter vector code..." contenteditable="true")
 		#scene
-			canvas#canvas(width="800" height="450")
+			canvas#canvas(width="800" height="500")
 		#description
+			span#title|Система прямоугольников
+			input#rect-input(autocomplete="on" maxlength="1024" placeholder="Enter system description..." contenteditable="true")
 
 		//- include settings-container
